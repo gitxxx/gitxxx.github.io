@@ -1,0 +1,175 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="大数据、信息安全、数据挖掘、树莓派"><title>NLP之知识图谱 | fangbb的博客</title><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/4.2.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css"><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="/css/donate.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">NLP之知识图谱</h1><a id="logo" href="/.">fangbb的博客</a><p class="description">得之我幸,失之我命</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">NLP之知识图谱</h1><div class="post-meta">Sep 10, 2017<span> | </span><span class="category"><a href="/categories/NLP/">NLP</a><a href="/categories/NLP/知识图谱/">知识图谱</a></span><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><span id="busuanzi_container_page_pv"> | <span id="busuanzi_value_page_pv"></span><span> Hits</span></span></div><div class="clear"><div id="toc" class="toc-article"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#知识图谱"><span class="toc-number">1.</span> <span class="toc-text">知识图谱</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#知识图谱架构"><span class="toc-number">2.</span> <span class="toc-text">知识图谱架构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#逻辑架构"><span class="toc-number">2.1.</span> <span class="toc-text">逻辑架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#技术架构"><span class="toc-number">2.2.</span> <span class="toc-text">技术架构</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#技术点"><span class="toc-number">3.</span> <span class="toc-text">技术点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#资料"><span class="toc-number">4.</span> <span class="toc-text">资料</span></a></li></ol></div></div><div class="post-content"><h1 id="知识图谱"><a href="#知识图谱" class="headerlink" title="知识图谱"></a>知识图谱</h1><p>维基百科介绍：</p>
+<blockquote>
+<p>The <a href="https://en.wikipedia.org/wiki/Knowledge_Graph" target="_blank" rel="noopener">Knowledge Graph</a> is a knowledge base used by Google and its services to enhance its search engine’s results with information gathered from a variety of sources. This information is presented to users in a box to the right of search results. </p>
+</blockquote>
+<p>初衷是为了提高搜索引擎的能力，改善用户的搜索质量以及搜索体验。随着人工智能的技术发展和应用，知识图谱逐渐成为关键技术之一，现已被广泛应用于智能搜索、智能问答、个性化推荐、内容分发等领域。</p>
+<p><strong>知识图谱</strong>是Google用于增强其搜索引擎功能的知识库。<strong>知识图谱</strong>本质就是展示出来的这种<strong>语义网络</strong>，是一种基于图的数据结构，由节点(Point)和边(Edge)组成。</p>
+<ul>
+<li><strong>节点</strong>表示<font color="red">实体</font>或<font color="red">概念</font></li>
+<li><strong>边</strong>则由<font color="red">属性</font>或<font color="red">关系</font>构成。</li>
+</ul>
+<p>解释：</p>
+<ul>
+<li><strong>实体</strong> 指的是具有可区别性且独立存在的某种事物。如某一个人、某一个城市、某一种植物等、某一种商品等等。世界万物由具体事物组成，此指实体。实体是知识图谱中的最基本元素，不同的实体间存在不同的关系。</li>
+<li><strong>概念</strong> 具有同种特性的实体构成的集合，如国家、民族、书籍、电脑等。 概念主要指集合、类别、对象类型、事物的种类，例如”人物”、”地理”等。</li>
+<li><strong>属性</strong> 从一个实体指向它的属性值。不同的属性类型对应于不同类型属性的边。属性值主要指对象指定属性的值。如图1所示的“面积”、“人口”、“首都”是几种不同的属性。属性值主要指对象指定属性的值，例如960万平方公里等。</li>
+<li><strong>关系</strong> 形式化为一个函数，它把 k k个点映射到一个布尔值。在知识图谱上，关系则是一个把k k个图节点(实体、语义类、属性值)映射到布尔值的函数。</li>
+</ul>
+<h1 id="知识图谱架构"><a href="#知识图谱架构" class="headerlink" title="知识图谱架构"></a>知识图谱架构</h1><p>架构主要可以被分为</p>
+<ul>
+<li>逻辑架构</li>
+<li>技术架构</li>
+</ul>
+<h2 id="逻辑架构"><a href="#逻辑架构" class="headerlink" title="逻辑架构"></a>逻辑架构</h2><p>在逻辑上，将知识图谱划分为两个层次：数据层和模式层。</p>
+<ul>
+<li><strong>模式层</strong>：在数据层之上，是知识图谱的核心，存储经过提炼的知识，通常通过本体库来管理这一层（本体库可以理解为面向对象里的“类”这样一个概念，本体库就储存着知识图谱的类）。</li>
+<li><strong>数据层</strong>：存储真实的数据。</li>
+</ul>
+<p>例如：</p>
+<blockquote>
+<p><strong>模式层</strong>：实体-关系-实体，实体-属性-属性值<br><strong>数据层</strong>：比尔盖茨-妻子-梅琳达·盖茨，比尔盖茨-性别-男性</p>
+</blockquote>
+<h2 id="技术架构"><a href="#技术架构" class="headerlink" title="技术架构"></a>技术架构</h2><p>技术架构图：<br><img src="/images/kb/kb_jg.png" alt><br>构建知识图谱是一个迭代更新的过程，根据知识获取的逻辑，每一轮迭代包含三个阶段：</p>
+<ul>
+<li><strong>信息抽取</strong>：从各种类型的数据源中提取出实体、属性以及实体间的相互关系，在此基础上形成本体化的知识表达；<ul>
+<li><strong>实体抽取</strong>：也称为命名实体识别（named entity recognition，NER）</li>
+<li><strong>关系抽取</strong>：从相关语料中提取出实体之间的关联关系，通过关系将实体联系起来，才能够形成网状的知识结构</li>
+<li><strong>属性抽取</strong>：从不同信息源中采集特定实体的属性信息。</li>
+</ul>
+</li>
+<li><strong>知识融合</strong>：在获得新知识之后，需要对其进行整合，以消除矛盾和歧义，比如某些实体可能有多种表达，某个特定称谓也许对应于多个不同的实体等；实体链接链接的是我们从半结构化数据和非结构化数据那里通过信息抽取提取出来的数据。对于结构化数据的处理，就是知识合并的内容了。<ul>
+<li><strong>实体对齐</strong>：当有多个数据源时，需要做实体对齐的过程，解决多个指称对应同一实体对象的问题，将这些指称项合并到正确的实体对象，由于该问题在信息检索和自然语言处理等领域具有特殊的重要性，吸引了大量的研究努力。还有一些其他的名字，比如实体匹配和实体同义。<ul>
+<li>具有相同描述的实体可能代表同一实体(字符相似);具有相同属性-值的实体可能代表相同对象(属性相似);具有相同邻居的实体可能指向同一个对象(结构相似)。</li>
+<li>自动化方法都无法保证100%的准确率，产出结果将作为候选供，人工进一步审核和过滤。</li>
+</ul>
+</li>
+<li><strong>属性对齐</strong>：当有多个数据源时，也需要做属性的融合，相对来说简单一些。</li>
+<li><strong>知识合并</strong>：一般来说知识合并主要分为两种：<ul>
+<li>合并外部知识库：设计数据层的融合和模式层的融合。</li>
+<li>合并关系数据库：采用资源描述框架（RDF）作为数据模型，将数据转换成RDF，称为RDB2RDF，其实质就是将关系数据库的数据换成RDF的三元组数据。</li>
+</ul>
+</li>
+<li><strong>实体链接</strong>：对于从文本中抽取得到的实体对象，将其链接到知识库中对应的正确实体对象的操作。首先通过<strong>实体抽取</strong>得到<strong>实体指称项</strong>，从知识库中选出一组候选实体对象，然后通过相似度计算将指称项链接到正确的实体对象。涉及如下两个问题：<ul>
+<li><strong>实体消歧</strong>专门用于解决同名实体产生歧义问题的技术，通过实体消歧，就可以根据当前的语境，准确建立实体链接，实体消歧主要采用聚类法。其实也可以看做基于上下文的分类问题，类似于词性消歧和词义消歧。</li>
+<li><strong>共指消解</strong>主要用于解决多个指称对应同一实体对象的问题。在一次会话中，多个指称可能指向的是同一实体对象。利用共指消解技术，可以将这些指称项关联到正确的实体对象。和实体对齐面临相同问题，只是共指消解指向实体即可，而实体对齐需要合并实体</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>知识加工</strong>：对于经过融合的新知识，需要经过质量评估之后（部分需要人工参与甄别），才能将合格的部分加入到知识库中，以确保知识库的质量。<ul>
+<li><strong>本体构建</strong>：本体（ontology）是对概念进行建模的规范，是描述客观世界的抽象模型，以形式化的方式对概念及其之间的联系给出明确定义。本体是同一领域内的不同主体之间进行交流的语义基础。<ul>
+<li>实体并列关系相似度计算：用于考察任意给定的2个实体在多大程度上属于同一概念分类的指标测度，相似度越高，表明这2个实体越有可能属于同一语义类别。</li>
+<li>实体上下位关系抽取：用于确定概念之间的隶属（IsA）关系，这种关系也称为上下位关系。</li>
+<li>本体的生成：主要是对各层次得到的概念进行聚类，并对其进行语义类的标定，即为该类中的实体指定1个或多个公共上位词。</li>
+</ul>
+</li>
+<li><strong>知识推理</strong>：从知识库中已有的实体关系数据出发，进行计算机推理，建立实体间的新关联，从而拓展和丰富知识网络。<ul>
+<li>基于逻辑的推理方法：主要采用抽象或具象的Horn子句建模，然后基于一阶逻辑谓词、描述逻辑以及规则进行推理。</li>
+<li>基于图的推理方法：主要思想是将实体和关系映射到一个低维的embedding空间中，基于知识的语义表达进行推理建模。</li>
+<li>基于深度学习的推理方法：主要考虑使用神经网络进行建模，并且往往会和上面两种推理方法结合起来进行建模。</li>
+</ul>
+</li>
+<li><strong>质量评估</strong>：可以对知识的可信度进行量化，通过舍弃置信度较低的知识来保障知识库的质量。</li>
+<li><strong>知识更新</strong>：从逻辑上看，知识库的更新包括概念层的更新和数据层的更新<ul>
+<li><strong>概念层的更新</strong>：是指新增数据后获得了新的概念，需要自动将新的概念添加到知识库的概念层中。</li>
+<li><strong>数据层的更新</strong>：主要是新增或更新实体、关系、属性值，对数据层进行更新需要考虑数据源的可靠性、数据的一致性（是否存在矛盾或冗杂等问题）等可靠数据源，并选择在各数据源中出现频率高的事实和属性加入知识库。</li>
+<li><strong>内容更新方式</strong>：<ul>
+<li>全面更新：指以更新后的全部数据为输入，从零开始构建知识图谱。这种方法比较简单，但资源消耗大，而且需要耗费大量人力资源进行系统维护；</li>
+<li>增量更新：以当前新增数据为输入，向现有知识图谱中添加新增知识。这种方式资源消耗小，但目前仍需要大量人工干预（定义规则等），因此实施起来十分困难。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="技术点"><a href="#技术点" class="headerlink" title="技术点"></a>技术点</h1><ul>
+<li><p>知识表示</p>
+<ul>
+<li><a href="http://cnschema.org" target="_blank" rel="noopener">cnSchema</a> 开放的知识图谱Schema标准</li>
+<li><a href="https://schema.org" target="_blank" rel="noopener">schema</a></li>
+</ul>
+</li>
+<li><p>word2vec、glove、fasttext</p>
+<ul>
+<li><a href="https://pypi.org/project/fasttext/" target="_blank" rel="noopener">fasttext</a></li>
+<li><a href="https://nlp.stanford.edu/projects/glove/" target="_blank" rel="noopener">glove</a></li>
+<li><a href="https://github.com/thunlp/OpenKE" target="_blank" rel="noopener">OpenKE</a></li>
+</ul>
+</li>
+<li><p>信息抽取</p>
+<ul>
+<li><p>爬虫</p>
+<ul>
+<li><a href="https://github.com/binux/pyspider" target="_blank" rel="noopener">pyspider</a></li>
+<li><a href="https://github.com/scrapy" target="_blank" rel="noopener">scrapy</a></li>
+</ul>
+</li>
+<li><p>三元组抽取</p>
+<ul>
+<li>正则表达式抽取网页内容</li>
+<li><a href="https://github.com/knowitall" target="_blank" rel="noopener">knowitall</a></li>
+<li><a href="http://www.openkg.cn/tool/sofie" target="_blank" rel="noopener">抽取链接本体及本体间关系</a></li>
+<li><a href="http://www.openkg.cn/tool/reverb" target="_blank" rel="noopener">开放三元组抽取</a></li>
+<li><a href="http://www.openkg.cn/tool/cn-deepdive" target="_blank" rel="noopener">三元组抽取</a></li>
+</ul>
+</li>
+<li><p>关系抽取</p>
+<ul>
+<li><a href="https://github.com/thunlp/NRE" target="_blank" rel="noopener">Neural Relation Extraction</a></li>
+<li><a href="http://deepdive.stanford.edu/" target="_blank" rel="noopener">DeepDive</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>知识融合（实体融合、属性融合、实体链接）</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/36d8b7182f6b" target="_blank" rel="noopener">实体融合</a></li>
+<li><a href="http://www.openkg.cn/tool/limes" target="_blank" rel="noopener">实体链接发现框架</a></li>
+<li><a href="http://www.openkg.cn/tool/dedupe" target="_blank" rel="noopener">知识链接python库</a></li>
+</ul>
+</li>
+<li><p>知识存储<br>存储方式通常分为如下两种：</p>
+<ul>
+<li>RDF存储格式<ul>
+<li><a href="jena.apache.org">Jena</a>,用于构建<a href="https://www.w3.org/standards/semanticweb/" target="_blank" rel="noopener">语义网</a>和<a href="https://www.w3.org/standards/semanticweb/data" target="_blank" rel="noopener">Linked Data</a>应用程序的免费开源Java框架。</li>
+<li><a href="http://www.icst.pku.edu.cn/intro/leizou/projects/gStore.htm" target="_blank" rel="noopener">gStore</a>  基于图的RDF三重存储,<a href="https://github.com/Caesar11/gStore" target="_blank" rel="noopener">源码</a></li>
+</ul>
+</li>
+<li>图数据库<ul>
+<li><a href="https://neo4j.com/" target="_blank" rel="noopener">Neo4j</a>，图数据库，<a href="https://github.com/neo4j" target="_blank" rel="noopener">源码</a></li>
+<li><a href="http://titan.thinkaurelius.com" target="_blank" rel="noopener">TITAN</a> Distributed Graph Database，<a href="https://github.com/thinkaurelius/titan" target="_blank" rel="noopener">源码</a></li>
+<li><a href="https://www.pingcap.com/docs-cn" target="_blank" rel="noopener">TiDB</a> PingCAP公司受Google Spanner/F1论文启发而设计的开源分布式HTAP数据库,结合了传统的RDBMS和NoSQL的最佳特性</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>知识推理<br>rdfs、owl</p>
+<ul>
+<li><a href="http://jena.apache.org" target="_blank" rel="noopener">jena</a> 用于构建<strong>语义网</strong>和<strong>关联数据</strong>应用程序的免费开源Java框架。</li>
+<li><a href="http://www.openkg.cn/tool/rdfox-rdf" target="_blank" rel="noopener">rdfox-rdf</a> 牛津大学的知识库推理工具</li>
+<li><a href="http://www.drools.org" target="_blank" rel="noopener">drools</a> 业务规则管理系统（BRMS）解决方案。</li>
+</ul>
+</li>
+<li><p>知识应用：语义搜索、问答系统</p>
+<ul>
+<li><a href="http://www.elastic.co/" target="_blank" rel="noopener">elastic</a>（kg+es）</li>
+<li><a href="http://www.openkg.cn/tool/elasticsearch-kbqa" target="_blank" rel="noopener">elasticsearch-kbqa</a></li>
+<li><a href="http://www.openkg.cn/tool/refo-kbqa" target="_blank" rel="noopener">refo-kbqa</a></li>
+</ul>
+</li>
+<li><p>知识可视化</p>
+<ul>
+<li><a href="https://d3js.org" target="_blank" rel="noopener">d3js</a> 基于数据处理文档的JavaScript库，<a href="https://www.cnblogs.com/fastmover/p/7779660.html" target="_blank" rel="noopener">D3.js指南</a></li>
+<li><a href="http://echarts.baidu.com" target="_blank" rel="noopener">echarts</a> 使用JavaScript 实现的开源可视化库，可以流畅的运行在 PC 和移动设备上</li>
+</ul>
+</li>
+</ul>
+<h1 id="资料"><a href="#资料" class="headerlink" title="资料"></a>资料</h1><ul>
+<li><a href="https://zhuanlan.zhihu.com/knowledgegraph" target="_blank" rel="noopener">知识图谱专栏</a></li>
+</ul>
+</div><script type="text/javascript" src="/js/share.js?v=0.0.0" async></script><a data-url="http://fangbinbin.com/2017/09/10/NLP之知识图谱/" data-id="cjxxgmaub0014owi2hi4lliyd" class="article-share-link">分享到</a><div class="tags"><a href="/tags/NLP/">NLP</a></div><div class="post-nav"><a href="/2018/03/11/Java之新特性/" class="pre">Java之新特性</a><a href="/2017/08/10/NLP之应用场景/" class="next">NLP之应用场景</a></div><div class="post-donate"><div id="donate_board" class="donate_bar center"><a id="btn_donate" href="javascript:;" title="打赏" class="btn_donate"></a><div class="donate_txt"> &uarr;<br>此文有用? 求鼓励!<br></div></div><div id="donate_guide" class="donate_bar center hidden"><img src="/images/wxzf.jpg" title="微信打赏"></div><script type="text/javascript">document.getElementById('btn_donate').onclick = function(){
+    $('#donate_board').addClass('hidden');
+    $('#donate_guide').removeClass('hidden');
+}</script></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form action="//www.baidu.com/baidu" method="get" accept-charset="utf-8" target="_blank" class="search-form"><input type="search" name="word" maxlength="20" placeholder="Search"><input type="hidden" name="si" value="http://fangbinbin.com"><input name="tn" type="hidden" value="bds"><input name="cl" type="hidden" value="3"><input name="ct" type="hidden" value="2097152"><input name="s" type="hidden" value="on"></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ES/">ES</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/NLP/">NLP</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/NLP/知识图谱/">知识图谱</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spark/">Spark</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/指导/">指导</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂谈/">杂谈</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/流处理/">流处理</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/系统/">系统</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/编程/">编程</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/编程/爬虫/">爬虫</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/编程/语言/">语言</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/编程语言/">编程语言</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/ES/" style="font-size: 21.67px;">ES</a> <a href="/tags/Java/" style="font-size: 15px;">Java</a> <a href="/tags/Kafka/" style="font-size: 25px;">Kafka</a> <a href="/tags/Markdown/" style="font-size: 15px;">Markdown</a> <a href="/tags/NLP/" style="font-size: 25px;">NLP</a> <a href="/tags/特征/" style="font-size: 15px;">特征</a> <a href="/tags/网站/" style="font-size: 15px;">网站</a> <a href="/tags/爬虫/" style="font-size: 15px;">爬虫</a> <a href="/tags/登陆/" style="font-size: 15px;">登陆</a> <a href="/tags/Spark-Streaming/" style="font-size: 25px;">Spark Streaming</a> <a href="/tags/Spark/" style="font-size: 18.33px;">Spark</a> <a href="/tags/技能图谱/" style="font-size: 15px;">技能图谱</a> <a href="/tags/系统/" style="font-size: 15px;">系统</a> <a href="/tags/虚拟机/" style="font-size: 15px;">虚拟机</a> <a href="/tags/杂谈/" style="font-size: 15px;">杂谈</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/05/31/记忆力杂谈/">记忆力杂谈</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/03/11/Java之新特性/">Java之新特性</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/09/10/NLP之知识图谱/">NLP之知识图谱</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/08/10/NLP之应用场景/">NLP之应用场景</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/05/08/NLP之命名实体识别/">NLP之命名实体识别</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/05/08/NLP之分词/">NLP之分词</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/30/Spark Streaming更新offset到zk/">Spark Streaming更新offset到zk</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/29/Spark Streaming优雅关闭/">Spark Streaming优雅关闭</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/28/Spark Streaming Direct零数据丢失/">Spark Streaming Direct零数据丢失</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/28/Spark Streaming Receiver零数据丢失/">Spark Streaming Receiver零数据丢失</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.baidu.com/" title="百度搜索" target="_blank">百度搜索</a><ul></ul><a href="http://www.google.com/" title="谷歌搜索" target="_blank">谷歌搜索</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">© <a href="/." rel="nofollow">fangbb的博客.</a> Powered by<a rel="nofollow" target="_blank" href="https://fangbinbin.com"> fangbb.</a><br>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1260773095'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s95.cnzz.com/z_stat.php%3Fid%3D1260773095%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script></div></div></div><a id="rocket" href="#top" class="show"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="/css/jquery.fancybox.css?v=0.0.0"><script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1260773095'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s95.cnzz.com/z_stat.php%3Fid%3D1260773095%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
