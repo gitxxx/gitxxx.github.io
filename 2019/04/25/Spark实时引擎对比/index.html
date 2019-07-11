@@ -1,0 +1,84 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="大数据、信息安全、数据挖掘、树莓派"><title>Spark两种Stream引擎 | fangbb的博客</title><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/4.2.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css"><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="/css/donate.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Spark两种Stream引擎</h1><a id="logo" href="/.">fangbb的博客</a><p class="description">得之我幸,失之我命</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Spark两种Stream引擎</h1><div class="post-meta">Apr 25, 2019<span> | </span><span class="category"><a href="/categories/Spark/">Spark</a><a href="/categories/Spark/流处理/">流处理</a></span><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><span id="busuanzi_container_page_pv"> | <span id="busuanzi_value_page_pv"></span><span> Hits</span></span></div><div class="clear"><div id="toc" class="toc-article"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#介绍"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Spark-Streaming"><span class="toc-number">2.</span> <span class="toc-text">Spark Streaming</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Spark-Structured-Streaming"><span class="toc-number">3.</span> <span class="toc-text">Spark Structured Streaming</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Micro-batch模式"><span class="toc-number">3.1.</span> <span class="toc-text">Micro-batch模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Continuous模式"><span class="toc-number">3.2.</span> <span class="toc-text">Continuous模式</span></a></li></ol></li></ol></div></div><div class="post-content"><h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>一直以来使用Spark Streaming居多，毕竟已经可以满足绝大多数场景（单stream无状态或者单stream的window），但在做实时计算平台这段时间，提出了很多需求，从而爆露出Spark Streaming的很多不足，比如Stream join。所以最近一段时间，查了大量的Stream的资料，并进行了记录，后续会逐渐的发出来，首先从Spark的两个引擎开始。</p>
+<p><img src="/images/spark/计算引擎能力.png" alt="计算引擎能力"></p>
+<h1 id="Spark-Streaming"><a href="#Spark-Streaming" class="headerlink" title="Spark Streaming"></a>Spark Streaming</h1><p>Spark Streaming是基于process Time的Micro-batch引擎，支持无状态的算子计算，同时可在Micro-batch中进行聚合操作；同时也支持有state的计算，支持Windows和跨Windows计算，在这种情况下，确实可以处理大多数需求。但Streaming在面对Event-Time和Lateness数据、Stream join等时仍显得捉襟见肘。这是由于其底层实现导致的。另外Streaming引擎并未统一Stream/batch，其实早在2015年Tyler Akidau等人发表的The Dataflow Model中已经提出了批流统一的思想，统一后，可以方便stream和batch的切换。<br>下面列出Spark Streaming的知识点：</p>
+<ul>
+<li>API类型：命令式</li>
+<li>Dstream Model，即Micro-Batch模型</li>
+<li>Failure Recovery<ul>
+<li>Parallel Recovery（RDD分Partition，并行恢复）</li>
+<li>Straggler（掉队者），执行慢的部分，重启</li>
+</ul>
+</li>
+<li>Consistency Semantics(一致性语义)<ul>
+<li>input -&gt; That Depends（看情况，要做EOS，需要可重放）</li>
+<li>Dstream -&gt; Exactly once（task失败，可重构出来，RDD是inmutable，Stream是Exactly once）</li>
+<li>output -&gt; At-least-once(default)，做到EOS，需要输出端支持事务</li>
+</ul>
+</li>
+<li>Dstream API<ul>
+<li>Transformations</li>
+<li>Output Operations</li>
+</ul>
+</li>
+<li>Evaluation（流转为Micro-Batch）<ul>
+<li>Linear Scalability（线性可扩展性）</li>
+<li>High Throuphput（高吞吐）</li>
+<li>High Performance（高性能）</li>
+</ul>
+</li>
+</ul>
+<h1 id="Spark-Structured-Streaming"><a href="#Spark-Structured-Streaming" class="headerlink" title="Spark Structured Streaming"></a>Spark Structured Streaming</h1><p>Structured Streaming 在 Spark 2.0 版本于 2016 年引入，并区分processing time 和 event time，并且支持end-to-end的语义保证，并且复用了Spark SQL 执行引擎，使得Structured Streaming可利用上Catalyst和Tungsten的优化，取得更好的高性能和高吞吐。</p>
+<h2 id="Micro-batch模式"><a href="#Micro-batch模式" class="headerlink" title="Micro-batch模式"></a>Micro-batch模式</h2><p>Structured Streaming默认使用micro-batch执行model。 这意味着streaming引擎会定期检查streaming source，并对自上次batch结束后到达的新数据运行batch query。在较高的层次上，如下所示：<br><img src="/images/spark/micro-batch-process-by-periodic-task.png" alt="Micro-batch模式周期性task处理events"><br>在此架构中，driver通过将records offsets保存到write-ahead-log来checkpoints进度，restart查询时offset会被使用到。请注意，在micro-batch处理开始之前，需要处理的record的offset范围已经被保存到write-ahead-log中，以便获得确定性的re-execution和end-to-edn语义。因此，source端可用的record必须等待当前的micro-batch处理完，然后再记录其offset，并在下一个micro-batch中进行处理。 在record级，timeline看起来像这样。<br><img src="/images/spark/micro-batch-process.png" alt="Micro-batch模式秒级延迟"><br>这使得从source到将output写入sink之间的最佳延迟为100毫秒。<br>我们最初使用这个micro-batch引擎构建了Structured Streaming，以便轻松利用Spark SQL(已针对性能进行优化,code generation和Tungsten)中的现有batch处理引擎。这使我们能够实现高吞吐量，延迟低至100毫秒。<br>在过去几年中，我们发现<strong>秒级延迟</strong>足以满足大多数实际的流式工作负载，如ETL和实时监控。 然而，一些工作workloads（例如，欺诈检测用例）确实受益于更低的延迟，这促使我们构建Continuous处理mode。 下面让我们了解continuous模式是如何工作的。</p>
+<h2 id="Continuous模式"><a href="#Continuous模式" class="headerlink" title="Continuous模式"></a>Continuous模式</h2><p>在Continuous处理模式中，Spark不会启动周期task，而是启动一组long-running tasks，这些任务可以连续read，process和write数据。 在较高的层次上，设置和record-level时间线看起来像这些（与上面的micro-batch执行图对比）。<br><img src="/images/spark/continuous-process-long-running-task.png" alt="Continuous处理使用long-running task持续处理events"><br><img src="/images/spark/continuous-process-long-running-task.png" alt="Continuous模式毫秒级延迟"><br>由于event在source中尽可能快的被处理及被写入sink，因此end-to-end的延迟是<strong>毫秒级</strong>。</p>
+<p>此外，通过改编众所周知的<font color="red">Chandy-Lamport算法</font>来checkpoint进度。 特殊marker records被注入到每个task的input数据stream中; 我们将它们称为“epoch markers”，将它们之间的gap称为“epochs”。当task遇到marker时，task异步上报最后一个offset给driver。一旦driver收到写入sink的所有task的offset，它就会将它们写入前面提到的write-ahead-log中。由于checkpointing完全异步，因此task可以不间断地继续，并提供一致的<font color="red">毫秒级延迟</font>。</p>
+<p>下面列出Spark Streaming的知识点：</p>
+<ul>
+<li>API类型：声明式</li>
+<li>Dataset/DataFrame,统一批流API，方便切换</li>
+<li>Output Mode<ul>
+<li>Append</li>
+<li>Complete</li>
+<li>Update</li>
+</ul>
+</li>
+<li>End-to-End application<ul>
+<li>End to End Exactly Once<ul>
+<li>Input：Replayable +WAL</li>
+<li>Output：Idempotent Writes</li>
+</ul>
+</li>
+<li>End to End At Least Once<ul>
+<li>默认值</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Micro-batch Processing<ul>
+<li>join</li>
+<li>Window</li>
+<li>Watermark + Lateness</li>
+<li>Trigger</li>
+</ul>
+</li>
+<li>Continuous Processing <ul>
+<li>latency：1 ms</li>
+<li>Chandy-Lamport algorithm（分布式快照，失败恢复）</li>
+</ul>
+</li>
+<li>SQL Engine reuse：optimizer、runtime code generator</li>
+</ul>
+<p><strong>参考</strong>:</p>
+<ul>
+<li><a href="https://databricks.com/blog/2018/03/20/low-latency-continuous-processing-mode-in-structured-streaming-in-apache-spark-2-3-0.html" target="_blank" rel="noopener">low-latency-continuous-processing-mode-in-structured-streaming-in-apache-spark-2-3-0</a></li>
+<li><a href="https://databricks.com/blog/2016/05/23/apache-spark-as-a-compiler-joining-a-billion-rows-per-second-on-a-laptop.html" target="_blank" rel="noopener">apache-spark-as-a-compiler-joining-a-billion-rows-per-second-on-a-laptop</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/51883927" target="_blank" rel="noopener">是时候放弃 Spark Streaming, 转向 Structured Streaming 了</a></li>
+<li><a href="https://www.infoq.cn/article/spark-vs-flink" target="_blank" rel="noopener">spark-vs-flink</a></li>
+<li><a href="http://www.cnblogs.com/duanxz/p/4408789.html" target="_blank" rel="noopener">Window窗体相关操作</a></li>
+<li><a href="https://databricks.com/session/structuring-spark-dataframes-datasets-and-streaming" target="_blank" rel="noopener">structuring-spark-dataframes-datasets-and-streaming</a></li>
+<li><a href="https://databricks.com/blog/2017/10/11/benchmarking-structured-streaming-on-databricks-runtime-against-state-of-the-art-streaming-systems.html" target="_blank" rel="noopener">benchmarking-structured-streaming-on-databricks-runtime-against-state-of-the-art-streaming-systems</a></li>
+</ul>
+</div><script type="text/javascript" src="/js/share.js?v=0.0.0" async></script><a data-url="http://fangbinbin.com/2019/04/25/Spark实时引擎对比/" data-id="cjxyhqtoy002fd4i24zls7n41" class="article-share-link">分享到</a><div class="tags"><a href="/tags/Spark/">Spark</a></div><div class="post-nav"><a href="/2019/04/29/Spark SQL架构/" class="pre">Spark SQL剖析</a><a href="/2019/04/24/MLeap实例篇/" class="next">MLeap实例篇</a></div><div class="post-donate"><div id="donate_board" class="donate_bar center"><a id="btn_donate" href="javascript:;" title="打赏" class="btn_donate"></a><div class="donate_txt"> &uarr;<br>此文有用? 求鼓励!<br></div></div><div id="donate_guide" class="donate_bar center hidden"><img src="/images/wxzf.jpg" title="微信打赏"></div><script type="text/javascript">document.getElementById('btn_donate').onclick = function(){
+    $('#donate_board').addClass('hidden');
+    $('#donate_guide').removeClass('hidden');
+}</script></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form action="//www.baidu.com/baidu" method="get" accept-charset="utf-8" target="_blank" class="search-form"><input type="search" name="word" maxlength="20" placeholder="Search"><input type="hidden" name="si" value="http://fangbinbin.com"><input name="tn" type="hidden" value="bds"><input name="cl" type="hidden" value="3"><input name="ct" type="hidden" value="2097152"><input name="s" type="hidden" value="on"></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ES/">ES</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/NLP/">NLP</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/NLP/知识图谱/">知识图谱</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spark/">Spark</a><span class="category-list-count">5</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Spark/流处理/">流处理</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/指导/">指导</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂谈/">杂谈</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/流处理/">流处理</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/系统/">系统</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/编程/">编程</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/编程/爬虫/">爬虫</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/编程/语言/">语言</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/编程语言/">编程语言</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/ES/" style="font-size: 22.5px;">ES</a> <a href="/tags/Java/" style="font-size: 15px;">Java</a> <a href="/tags/Kafka/" style="font-size: 25px;">Kafka</a> <a href="/tags/ML/" style="font-size: 20px;">ML</a> <a href="/tags/MLeap/" style="font-size: 17.5px;">MLeap</a> <a href="/tags/Markdown/" style="font-size: 15px;">Markdown</a> <a href="/tags/NLP/" style="font-size: 25px;">NLP</a> <a href="/tags/特征/" style="font-size: 15px;">特征</a> <a href="/tags/网站/" style="font-size: 15px;">网站</a> <a href="/tags/爬虫/" style="font-size: 15px;">爬虫</a> <a href="/tags/登陆/" style="font-size: 15px;">登陆</a> <a href="/tags/Spark/" style="font-size: 25px;">Spark</a> <a href="/tags/Spark-Streaming/" style="font-size: 25px;">Spark Streaming</a> <a href="/tags/技能图谱/" style="font-size: 15px;">技能图谱</a> <a href="/tags/系统/" style="font-size: 15px;">系统</a> <a href="/tags/虚拟机/" style="font-size: 15px;">虚拟机</a> <a href="/tags/杂谈/" style="font-size: 15px;">杂谈</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2019/04/29/Spark SQL架构/">Spark SQL剖析</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/04/25/Spark实时引擎对比/">Spark两种Stream引擎</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/04/24/MLeap实例篇/">MLeap实例篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/04/01/MLeap使用篇/">MLeap使用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/03/29/MLeap介绍篇/">MLeap介绍篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/03/20/Spark ML Pipelines/">Spark ML Pipelines</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/05/31/记忆力杂谈/">记忆力杂谈</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/03/11/Java之新特性/">Java之新特性</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/09/10/NLP之知识图谱/">NLP之知识图谱</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/08/10/NLP之应用场景/">NLP之应用场景</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.baidu.com/" title="百度搜索" target="_blank">百度搜索</a><ul></ul><a href="http://www.google.com/" title="谷歌搜索" target="_blank">谷歌搜索</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">© <a href="/." rel="nofollow">fangbb的博客.</a> Powered by<a rel="nofollow" target="_blank" href="https://fangbinbin.com"> fangbb.</a><br>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1260773095'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s95.cnzz.com/z_stat.php%3Fid%3D1260773095%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script></div></div></div><a id="rocket" href="#top" class="show"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="/css/jquery.fancybox.css?v=0.0.0"><script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1260773095'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s95.cnzz.com/z_stat.php%3Fid%3D1260773095%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
